@@ -21,20 +21,24 @@ function redis(): Redis {
   return client
 }
 
-const DOC_KEY = 'doc:main'
 const SHARE_PREFIX = 'share:'
 const SHARE_TTL_SECONDS = 60 * 60 * 24 * 90 // 共有スナップショットは90日で自動失効
+
+// チームごとのライブドキュメントのキー
+function docKey(teamId: string): string {
+  return `doc:${teamId}`
+}
 
 export type StoredDoc = Record<string, unknown>
 export type StoredShare = { doc: StoredDoc; createdAt: number }
 
-// チーム共通のライブドキュメント（自動保存先）
-export async function getDoc(): Promise<StoredDoc | null> {
-  return (await redis().get<StoredDoc>(DOC_KEY)) ?? null
+// チームのライブドキュメント（自動保存先）
+export async function getDoc(teamId: string): Promise<StoredDoc | null> {
+  return (await redis().get<StoredDoc>(docKey(teamId))) ?? null
 }
 
-export async function putDoc(doc: StoredDoc): Promise<void> {
-  await redis().set(DOC_KEY, doc)
+export async function putDoc(teamId: string, doc: StoredDoc): Promise<void> {
+  await redis().set(docKey(teamId), doc)
 }
 
 // 合言葉で配布する読み取り専用スナップショット

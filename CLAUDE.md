@@ -1,6 +1,6 @@
 # yosakoi_formation
 
-よさこいのフォーメーション表を作成・編集し、画像/PDFに書き出すWebアプリ。フロントは静的 SPA（Vite + React 18 + TypeScript + Tailwind CSS）、バックエンドは Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）。ログイン（チーム共通ID/PW）・クラウド自動保存・合言葉での読み取り専用共有に対応。
+よさこいのフォーメーション表を作成・編集し、画像/PDFに書き出すWebアプリ。フロントは静的 SPA（Vite + React 18 + TypeScript + Tailwind CSS）、バックエンドは Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）。ログイン（チーム別ID/PW）・チームごとのクラウド自動保存・合言葉での読み取り専用共有に対応。
 
 ## コマンド
 
@@ -24,7 +24,7 @@
 - **書き出し**: `src/lib/export.ts` が **Canvas 2D で直接描画**して PNG / PDF（jsPDF, 1場面=1ページ）を生成。日本語は canvas でラスタライズするため jsPDF のフォント制約を回避している。
 - **幾何**: `src/lib/geometry.ts`（正規化変換・グリッド吸着・整列〔横/縦/円/格子〕・既定配置）。純関数でテスト対象。
 - **UI部品**: `src/components/ui.tsx`（Button / Modal / Drawer）。shadcn/Radix は使わず Tailwind + ネイティブフォーム部品で軽量・タッチ対応。アイコンは lucide-react。
-- **バックエンド/認証**: `api/_lib/auth.ts`（チーム共通ID/PWを環境変数と `timingSafeEqual` で照合し、HMAC署名トークンを発行・検証。Node標準 `crypto` のみ）、`api/login.ts`・`api/doc.ts`（要トークン）・`api/share.ts`（POSTは要トークン / GETは公開）。`api/_lib/store.ts` が KV を操作（`doc:main` と `share:<合言葉>`）。クライアント側は `src/lib/api.ts`（fetchラッパ・401処理）と `src/lib/session.ts`（トークン保存）。`/api` は `api/tsconfig.json` で別途型チェックする（フロントの `tsconfig.json` には含めない）。
+- **バックエンド/認証**: `api/_lib/auth.ts`（環境変数 `APP_TEAMS`〔JSON配列のチーム定義〕の ID/PW を `timingSafeEqual` で照合し、一致した teamId を埋め込んだ HMAC署名トークンを発行・検証。Node標準 `crypto` のみ）、`api/login.ts`・`api/doc.ts`（要トークン）・`api/share.ts`（POSTは要トークン / GETは公開）。`api/_lib/store.ts` が KV を操作（チーム別の `doc:<teamId>` と `share:<合言葉>`）。`doc.ts` はトークンから取り出した teamId で読み書きするため、チームごとに別のフォーメーションを保持する。クライアント側は `src/lib/api.ts`（fetchラッパ・401処理）と `src/lib/session.ts`（トークン保存）。`/api` は `api/tsconfig.json` で別途型チェックする（フロントの `tsconfig.json` には含めない）。
 - **ログイン/共有UI**: `src/components/LoginGate.tsx`（未ログイン時のゲート）、`src/components/ShareDialog.tsx`（合言葉の作成）、`src/components/ShareViewer.tsx`（`?share=合言葉` で開く読み取り専用ビュー。`StageView` と `export.ts` を再利用。ログイン不要・編集不可・画像/PDF出力可）。
 
 ## レスポンシブ
@@ -37,8 +37,8 @@
 このアプリは **静的 Vite SPA（フロント）+ Vercel Serverless Functions（`/api`）+ KV** の構成。GitHub 連携（独立リポジトリ `tabear25/yosakoi_formation_editor`）で `main` へ push すると自動デプロイされる。
 
 - 設定は `vercel.json`（`framework=vite` / `buildCommand=npm run build` / `outputDirectory=dist`）。`/api/*.ts` は Vercel が自動的にサーバー関数として検出する。
-- **必要な環境変数**（Vercel の Settings → Environment Variables で設定。値はコード/Git に置かない）: `APP_LOGIN_ID` / `APP_LOGIN_PASSWORD`（チーム共通ログイン）, `SESSION_SECRET`（トークン署名用のランダム文字列）, KV 接続情報（`KV_REST_API_URL` / `KV_REST_API_TOKEN` 等。Storage 連携が自動注入）。雛形は `.env.example`。
-- **KV**: Vercel の Storage（Vercel KV / Upstash Redis）を作成して紐付ける。`doc:main`（ライブドキュメント）と `share:<合言葉>`（共有スナップショット, 90日TTL）を保存。
+- **必要な環境変数**（Vercel の Settings → Environment Variables で設定。値はコード/Git に置かない）: `APP_TEAMS`（チーム別ログインの JSON 配列。例 `[{"id":"teamA","password":"...","name":"チームA"}]`。id は半角英数・`-`・`_` のみで KV キーに使う。チーム追加はこの値を編集して再デプロイ）, `SESSION_SECRET`（トークン署名用のランダム文字列）, KV 接続情報（`KV_REST_API_URL` / `KV_REST_API_TOKEN` 等。Storage 連携が自動注入）。雛形は `.env.example`。
+- **KV**: Vercel の Storage（Vercel KV / Upstash Redis）を作成して紐付ける。`doc:<teamId>`（チームごとのライブドキュメント）と `share:<合言葉>`（共有スナップショット, 90日TTL）を保存。
 - ローカルでサーバー関数込み起動は `vercel dev`（`.env.example` を `.env.local` に複製して値を設定）。
 - **本番（Production）デプロイは必ず事前に確認を取る。** まず Preview で確認してから本番へ。
 - git リポジトリのルートはホームフォルダだが、このプロジェクトは独立リポジトリ。push 先は `yosakoi_formation_editor` のみで、ホームdir には及ばない。

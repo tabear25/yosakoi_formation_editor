@@ -2,7 +2,7 @@
 //   POST: 現在のドキュメントのスナップショットを保存し合言葉を返す（要トークン）
 //   GET ?code=: 合言葉に対応するスナップショットを返す（公開・認証不要）
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { generateCode, isAuthorized } from './_lib/auth'
+import { generateCode, getAuthTeam } from './_lib/auth'
 import { getShare, putShare, shareExists, type StoredDoc } from './_lib/store'
 
 const MAX_CODE_LENGTH = 64
@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
-      if (!isAuthorized(req)) {
+      if (!getAuthTeam(req)) {
         return res.status(401).json({ error: 'unauthorized' })
       }
       const body = (req.body ?? {}) as { doc?: unknown; code?: unknown }

@@ -19,52 +19,111 @@ function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(ab, bb)
 }
 
-// 環境変数に設定されたチーム共通の ID/PW と一致するか
-export function verifyCredentials(id: string, password: string): boolean {
-  const expectedId = process.env.APP_LOGIN_ID
-  const expectedPassword = process.env.APP_LOGIN_PASSWORD
-  if (!expectedId || !expectedPassword) {
-    throw new Error('APP_LOGIN_ID / APP_LOGIN_PASSWORD が未設定です')
+// チーム定義。id は KV キーの断片になるため英数・ハイフン・アンダースコアのみ許可。
+type Team = { id: string; password: string; name?: string }
+
+// teamId は KV キー（doc:<teamId>）に使うので文字種と長さを厳しく制限する
+const TEAM_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/
+function isValidTeamId(id: unknown): id is string {
+  return typeof id === 'string' && TEAM_ID_PATTERN.test(id)
+}
+
+let cachedTeams: Team[] | null = null
+
+// APP_TEAMS（JSON 配列）をパース・検証して返す（初回のみ実行しメモ化）
+function teams(): Team[] {
+  if (cachedTeams) return cachedTeams
+  const raw = process.env.APP_TEAMS
+  if (!raw) throw new Error('APP_TEAMS が未設定です')
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new Error('APP_TEAMS が不正な JSON です')
   }
-  // 片方だけ一致の場合でも両方比較し、応答時間の差を作らない
-  const idOk = safeEqual(id, expectedId)
-  const passwordOk = safeEqual(password, expectedPassword)
-  return idOk && passwordOk
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    throw new Error('APP_TEAMS は1件以上のチーム定義を含む配列である必要があります')
+  }
+  const seen = new Set<string>()
+  const list: Team[] = parsed.map((entry, index) => {
+    const t = entry as { id?: unknown; password?: unknown; name?: unknown }
+    if (!isValidTeamId(t.id)) {
+      throw new Error(
+        `APP_TEAMS[${index}].id が不正です（英数・- ・_ のみ、1〜64文字）`,
+      )
+    }
+    if (typeof t.password !== 'string' || !t.password) {
+      throw new Error(`APP_TEAMS[${index}].password が未設定です`)
+    }
+    if (seen.has(t.id)) {
+      throw new Error(`APP_TEAMS の id が重複しています: ${t.id}`)
+    }
+    seen.add(t.id)
+    return {
+      id: t.id,
+      password: t.password,
+      name: typeof t.name === 'string' ? t.name : undefined,
+    }
+  })
+  cachedTeams = list
+  return list
+}
+
+// 入力された ID/PW に一致するチームの teamId を返す（一致しなければ null）
+export function verifyCredentials(id: string, password: string): string | null {
+  let matched: string | null = null
+  // 早期 return せず全チームを走査し、毎回 ID/PW 両方を比較して応答時間の差を抑える
+  for (const team of teams()) {
+    const idOk = safeEqual(id, team.id)
+    const passwordOk = safeEqual(password, team.password)
+    // & で結合し、短絡評価による比較回数の差を作らない
+    if (Number(idOk) & Number(passwordOk)) {
+      matched = team.id
+    }
+  }
+  return matched
 }
 
 function sign(body: string): string {
   return createHmac('sha256', secret()).update(body).digest('base64url')
 }
 
-export function signToken(): string {
-  const payload = { exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS }
+export function signToken(teamId: string): string {
+  const payload = {
+    team: teamId,
+    exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
+  }
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
   return `${body}.${sign(body)}`
 }
 
-export function verifyToken(token: string): boolean {
+// 署名・有効期限を検証し、正しければ teamId を返す（不正なら null）
+export function verifyToken(token: string): { team: string } | null {
   const parts = token.split('.')
-  if (parts.length !== 2) return false
+  if (parts.length !== 2) return null
   const [body, sig] = parts
-  if (!safeEqual(sig, sign(body))) return false
+  if (!safeEqual(sig, sign(body))) return null
   try {
     const payload = JSON.parse(
       Buffer.from(body, 'base64url').toString(),
-    ) as { exp?: number }
-    return (
+    ) as { team?: unknown; exp?: unknown }
+    const expValid =
       typeof payload.exp === 'number' &&
       payload.exp > Math.floor(Date.now() / 1000)
-    )
+    // team は KV キーに使うため、署名済みでも改めて文字種を検証する
+    if (!expValid || !isValidTeamId(payload.team)) return null
+    return { team: payload.team }
   } catch {
-    return false
+    return null
   }
 }
 
-// Authorization: Bearer <token> ヘッダを検証する
-export function isAuthorized(req: VercelRequest): boolean {
+// Authorization: Bearer <token> ヘッダを検証し、teamId を返す（不正なら null）
+export function getAuthTeam(req: VercelRequest): string | null {
   const header = req.headers.authorization
-  if (!header || !header.startsWith('Bearer ')) return false
-  return verifyToken(header.slice('Bearer '.length).trim())
+  if (!header || !header.startsWith('Bearer ')) return null
+  const result = verifyToken(header.slice('Bearer '.length).trim())
+  return result ? result.team : null
 }
 
 // 合言葉の自動生成（0/o/1/l など紛らわしい文字を除外）

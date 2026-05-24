@@ -4,6 +4,23 @@ import { ApiError, login, setUnauthorizedHandler } from '@/lib/api'
 import { getToken, setToken } from '@/lib/session'
 import { Button } from './ui'
 
+// アカウント発行依頼メールの宛先・文面。運用に合わせてここを書き換える。
+const REQUEST_ACCOUNT_EMAIL = 'katakuma4625@gmail.com'
+const REQUEST_ACCOUNT_SUBJECT = '【よさこいフォーメーション表】アカウント発行依頼'
+const REQUEST_ACCOUNT_BODY = [
+  'よさこいフォーメーション表のアカウント発行を希望します。',
+  '',
+  'チーム名：',
+  'ご担当者名：',
+  'ご連絡先：',
+  '備考：',
+].join('\n')
+
+const REQUEST_ACCOUNT_MAILTO =
+  `mailto:${REQUEST_ACCOUNT_EMAIL}` +
+  `?subject=${encodeURIComponent(REQUEST_ACCOUNT_SUBJECT)}` +
+  `&body=${encodeURIComponent(REQUEST_ACCOUNT_BODY)}`
+
 // 未ログインならログインフォームを表示し、ログイン済みのときだけ children を表示する。
 // どのAPI呼び出しでも 401 を受けたらログイン画面へ戻す。
 export function LoginGate({ children }: { children: ReactNode }) {
@@ -80,6 +97,16 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         />
 
         {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
+
+        <p className="mt-3 text-center text-[11px] text-slate-500">
+          アカウントをお持ちでない場合は{' '}
+          <a
+            href={REQUEST_ACCOUNT_MAILTO}
+            className="font-medium text-indigo-600 underline hover:text-indigo-700"
+          >
+            アカウント発行を依頼する
+          </a>
+        </p>
 
         <Button
           type="submit"
