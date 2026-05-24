@@ -31,8 +31,9 @@ export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
     dispatch({ type: 'ALIGN', kind, ids: selectedIds })
   }
 
+  // モバイルでは横1行のまま横スクロール。各ボタンは縮ませず自然幅を保ち、CJKの縦折り返しを防ぐ。
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto border-t border-slate-200 bg-white px-2 py-1.5">
+    <div className="flex items-center gap-1.5 overflow-x-auto border-t border-slate-200 bg-white px-2 py-1.5 [&>button]:shrink-0">
       <Button
         size="sm"
         active={snapEnabled}

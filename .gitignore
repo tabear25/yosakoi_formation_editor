@@ -4,3 +4,9 @@ dist/
 *.local
 .DS_Store
 *.log
+
+# 秘密情報・Vercel（.env.example だけは雛形として追跡する）
+.env
+.env.*
+!.env.example
+.vercel/

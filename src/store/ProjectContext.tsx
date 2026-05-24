@@ -11,6 +11,7 @@ import {
   type SetStateAction,
 } from 'react'
 import type { DocState, Scene } from '@/types'
+import { useAutoSave, type SaveStatus } from '@/hooks/useAutoSave'
 import { createInitialState, projectReducer, type Action } from './projectReducer'
 
 type AppContextValue = {
@@ -18,6 +19,10 @@ type AppContextValue = {
   dispatch: Dispatch<Action>
   edited: boolean
   currentScene: Scene
+  // クラウド自動保存の状態
+  saveStatus: SaveStatus
+  dirty: boolean
+  saveNow: () => Promise<boolean>
   // UI 状態（ドキュメントには含めない一時的な選択・モード）
   selectedIds: string[]
   setSelectedIds: Dispatch<SetStateAction<string[]>>
@@ -29,18 +34,32 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null)
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, rawDispatch] = useReducer(projectReducer, undefined, createInitialState)
+export function AppProvider({
+  children,
+  initialState,
+}: {
+  children: ReactNode
+  initialState?: DocState
+}) {
+  // initialState があればそれを初期値に、なければサンプルデータを生成する
+  const [state, rawDispatch] = useReducer(
+    projectReducer,
+    initialState,
+    (init) => init ?? createInitialState(),
+  )
   const [edited, setEdited] = useState(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [selectionMode, setSelectionMode] = useState(false)
   const [snapEnabled, setSnapEnabled] = useState(false)
 
-  // ユーザー操作（dispatch）が一度でもあれば「編集あり」とみなす（離脱ガード用）
+  // ユーザー操作（dispatch）が一度でもあれば「編集あり」とみなす
   const dispatch = useCallback((action: Action) => {
     setEdited(true)
     rawDispatch(action)
   }, [])
+
+  // state の変更を一定間隔でまとめてクラウドへ自動保存する
+  const { status: saveStatus, dirty, saveNow } = useAutoSave(state)
 
   const currentScene = useMemo(
     () =>
@@ -61,6 +80,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch,
     edited,
     currentScene,
+    saveStatus,
+    dirty,
+    saveNow,
     selectedIds,
     setSelectedIds,
     selectionMode,
