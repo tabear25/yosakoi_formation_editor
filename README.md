@@ -1,7 +1,7 @@
 # yosakoi_formation
 
 よさこいのフォーメーション表を作成・編集し、画像 (PNG) / PDF に書き出す Web アプリです。
-フロントは **Vite + React 18 + TypeScript + Tailwind CSS** の SPA、バックエンドは **Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）**。**ログイン（チーム共通 ID/PW）・クラウド自動保存・合言葉での読み取り専用共有**に対応しています。
+フロントは **Vite + React 18 + TypeScript + Tailwind CSS** の SPA、バックエンドは **Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）**。**ログイン（チーム別 ID/PW）・チームごとのクラウド自動保存・合言葉での読み取り専用共有**に対応しています。
 
 > 📘 **AI / 開発者向けの詳細**: 設計判断や状態管理の方針は [`CLAUDE.md`](./CLAUDE.md)、経緯の引き継ぎメモは [`.claude/SESSION_SUMMARY.md`](./.claude/SESSION_SUMMARY.md) を参照してください。
 
@@ -14,8 +14,8 @@
 - 整列（フォーメーション成型）: 横一列 / 縦一列 / 円 / 格子 / 三角（客席側を頂点としたピラミッド）
 - 複数選択を「形のまま」一括移動するグループドラッグ
 - 表示中シーンを PNG、全シーンを PDF（1 場面 = 1 ページ）に書き出し
-- **ログイン**: チーム共通の ID / パスワードで認証（外部サービス連携なし）
-- **クラウド自動保存**: 編集すると自動でサーバーに保存され、リロードや別端末でも復元
+- **ログイン**: チームごとに割り当てた ID / パスワードで認証（外部サービス連携なし）。ログイン画面からは管理者宛にアカウント発行を依頼するメールリンクも開ける
+- **クラウド自動保存**: 編集すると自動でサーバーに保存され、リロードや別端末でも復元。保存先はチームごとに分かれており、他チームの表に影響しない
 - **合言葉で共有**: 現在の内容を合言葉付きの URL で配布。受け取った人は**ログイン不要・読み取り専用**で閲覧と PNG / PDF 出力ができる（編集は不可）
 - 最大 〜60 人規模、PC / タブレット / スマホ対応（レスポンシブ・タッチ。モバイルの整列ツールバーは横スクロール）
 
@@ -30,7 +30,7 @@
 
    | 変数 | 用途 |
    | --- | --- |
-   | `APP_LOGIN_ID` / `APP_LOGIN_PASSWORD` | チーム共通のログイン情報 |
+   | `APP_TEAMS` | チーム別ログイン情報の JSON 配列。例 `[{"id":"teamA","password":"...","name":"チームA"}]`。`id` は半角英数・`-`・`_` のみ（KV キーに使う）。チーム追加はこの値を編集して再デプロイ |
    | `SESSION_SECRET` | セッショントークン署名用のランダムな長い文字列 |
    | `KV_REST_API_URL` / `KV_REST_API_TOKEN` | KV 接続情報（Storage 連携が自動注入。Upstash 連携の場合は `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`） |
 
@@ -82,7 +82,7 @@
 - **画面描画**: `src/components/StageView.tsx`（枠・グリッド・踊り子マーカーを DOM で描画）。`src/components/StageCanvas.tsx` が採寸・ズーム / パン・Pointer Events によるドラッグ / 選択 / パンを担当（マウス / タッチ共通、`touch-action: none`）。
 - **書き出し**: `src/lib/export.ts` が **Canvas 2D で直接描画**して PNG / PDF（jsPDF, 1 場面 = 1 ページ）を生成。日本語は canvas でラスタライズして jsPDF のフォント制約を回避。
 - **幾何**: `src/lib/geometry.ts`（正規化変換・グリッド吸着・整列〔横 / 縦 / 円 / 格子 / 三角〕・既定配置）。純関数でテスト対象。
-- **バックエンド / 認証**: `api/_lib/auth.ts`（チーム共通 ID/PW を環境変数と `timingSafeEqual` で照合し、HMAC 署名トークンを発行・検証。Node 標準 `crypto` のみ）。`api/login.ts`・`api/doc.ts`（要トークン）・`api/share.ts`（POST は要トークン / GET は公開）。`api/_lib/store.ts` が KV を操作（`doc:main` と `share:<合言葉>`）。
+- **バックエンド / 認証**: `api/_lib/auth.ts`（環境変数 `APP_TEAMS`〔JSON 配列のチーム定義〕の ID/PW を `timingSafeEqual` で照合し、一致した teamId を埋め込んだ HMAC 署名トークンを発行・検証。Node 標準 `crypto` のみ）。`api/login.ts`・`api/doc.ts`（要トークン）・`api/share.ts`（POST は要トークン / GET は公開）。`api/_lib/store.ts` が KV を操作（チーム別の `doc:<teamId>` と `share:<合言葉>`）。`doc.ts` はトークンから取り出した teamId で読み書きするため、チームごとに別のフォーメーションを保持する。
 - **クライアント API / 認証 UI**: `src/lib/api.ts`（fetch ラッパ・401 処理）、`src/lib/session.ts`（トークン保存）、`src/components/LoginGate.tsx`（ログインゲート）、`src/components/ShareDialog.tsx`（合言葉作成）、`src/components/ShareViewer.tsx`（`?share=合言葉` の読み取り専用ビュー。`StageView` と `export.ts` を再利用）。
 - **UI 部品**: `src/components/ui.tsx`（Button / Modal / Drawer）。shadcn/Radix は使わず Tailwind + ネイティブフォーム部品で軽量・タッチ対応。アイコンは lucide-react。
 
@@ -179,7 +179,7 @@ npm run preview
 
 ### 2. ログインできない / 保存されない
 
-`/api` と KV、環境変数が必要です。`npm run dev` 単体では `/api` が動かないため、`vercel dev` かデプロイ環境で確認してください。`APP_LOGIN_ID` / `APP_LOGIN_PASSWORD` / `SESSION_SECRET` と KV の接続情報が設定されているかを確認してください。
+`/api` と KV、環境変数が必要です。`npm run dev` 単体では `/api` が動かないため、`vercel dev` かデプロイ環境で確認してください。`APP_TEAMS`（JSON 配列）/ `SESSION_SECRET` と KV の接続情報が設定されているかを確認してください。`APP_TEAMS` の JSON が不正だとログイン API がエラーになります。
 
 ### 3. ビルド時に 500kB 超のチャンク警告が出る
 
