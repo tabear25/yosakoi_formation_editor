@@ -65,5 +65,19 @@
 
 ## 未対応 / 今後の拡張余地
 
-- 永続化（localStorage / JSON / サーバ）、シーン間アニメ再生、踊り子の番号・向き表示。データモデルは正規化済みでそのまま拡張可能。
-- 注: Vercel プラグイン / agent-skills は主に Next.js+DB 向けで本アプリ（静的SPA）には不要。
+- 複数フォーメーションの保管・個人別アカウント・共同編集、シーン間アニメ再生、踊り子の番号・向き表示。データモデルは正規化済みでそのまま拡張可能。
+
+---
+
+## 更新（2026-05-24）: バックエンド化 — 認証 / 自動保存 / 合言葉共有
+
+初回の「永続化なし・静的SPA」から方針転換し、**Vercel Serverless Functions（`/api`）+ KV** を追加した。canonical な説明は `../CLAUDE.md` を参照（ここは差分メモ）。
+
+- **構成**: フロント（Vite SPA）はそのまま、バックエンドに `/api/login` `/api/doc`(GET/PUT) `/api/share`(POST/GET) を追加。共通処理は `api/_lib/auth.ts`（HMACトークン・ID/PW照合, Node標準crypto）と `api/_lib/store.ts`（KV）。`/api` は `api/tsconfig.json` で別途型チェック。
+- **確定要件（追加ヒアリング）**: サーバーあり / ログインは**チーム共通1組のID/PW** / 共有は**閲覧+画像PDF出力のみ（読み取り専用）** / Vercel は**Git連携**（独立リポジトリ `tabear25/yosakoi_formation_editor`）。
+- **自動保存**: ログイン後、`useAutoSave`(デバウンス1.5s) で `PUT /api/doc`→KV `doc:main`。起動時 `GET /api/doc`→`AppProvider initialState` で復元。未保存時のみ `beforeunload` 警告。
+- **ログイン**: `LoginGate` がゲート。`src/lib/api.ts`(401処理) / `src/lib/session.ts`(トークン保存)。
+- **共有**: `ShareDialog` で合言葉を作成→KV `share:<code>`(90日TTL)。`?share=CODE` で `ShareViewer`（ログイン不要・読み取り専用・`StageView`/`export.ts` 再利用）。
+- **環境変数（Vercel ダッシュボードで設定。秘密はコード/Gitに置かない）**: `APP_LOGIN_ID` / `APP_LOGIN_PASSWORD` / `SESSION_SECRET` / KV接続(`KV_REST_API_URL`等)。雛形 `.env.example`、`.gitignore` に `.env`/`.env.*`/`.vercel/` 追加。
+- **追加依存**: `@upstash/redis`（runtime）, `@vercel/node`（dev）。
+- **デプロイ**: Vercel で Storage(KV)作成→環境変数設定→`main` push で自動デプロイ。ローカルは `vercel dev`。**push 先は独立リポジトリのみでホームdirには及ばない**。
