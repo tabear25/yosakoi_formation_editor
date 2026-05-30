@@ -3,6 +3,8 @@
 よさこいのフォーメーション表を作成・編集し、画像 (PNG) / PDF に書き出す Web アプリです。
 フロントは **Vite + React 18 + TypeScript + Tailwind CSS** の SPA、バックエンドは **Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）**。**ログイン（チーム別 ID/PW）・チームごとのクラウド自動保存・合言葉での読み取り専用共有**に対応しています。
 
+> 🌐 **公開中**: <https://yosakoi-formation-editor.vercel.app> — `main` への push で Vercel が本番に自動デプロイします（2026-05-30 公開・稼働中）。
+
 > 📘 **AI / 開発者向けの詳細**: 設計判断や状態管理の方針は [`CLAUDE.md`](./CLAUDE.md)、経緯の引き継ぎメモは [`.claude/SESSION_SUMMARY.md`](./.claude/SESSION_SUMMARY.md) を参照してください。
 
 ## できること
@@ -167,7 +169,9 @@ npm run preview
 
 **静的 Vite SPA（フロント）+ Serverless Functions（`/api`）+ KV** の構成です。独立した GitHub リポジトリ（`tabear25/yosakoi_formation_editor`）を Vercel に Git 連携し、`main` へ push すると自動デプロイされます。
 
+- **本番URL**: <https://yosakoi-formation-editor.vercel.app>（2026-05-30 公開・稼働中。ログイン・自動保存・共有まで動作確認済み）。
 - 設定ファイル: `vercel.json`（`framework=vite` / `buildCommand=npm run build` / `outputDirectory=dist`）。`/api/*.ts` は Vercel が自動的にサーバー関数として検出します。
+- **`/api` の相対 import は拡張子 `.js` 必須**: `package.json` が `type:module` のため、Vercel は `/api/*.ts` をバンドルせず `.js` に変換します。`from './_lib/auth.js'` のように拡張子付きで書かないと、本番のみ `FUNCTION_INVOCATION_FAILED`(500) になります（ローカルの型チェック／ビルドでは検出できません。詳細は「動かなかったら」5）。
 - デプロイ前に「セットアップ（バックエンド / Vercel）」の **KV 作成**と**環境変数**を済ませてください。
 - **本番（Production）デプロイは必ず事前に確認を取ってください。** まず Preview で内容を確認してから本番へ。
 
@@ -188,3 +192,7 @@ jspdf 由来の警告で実害はありません。jspdf 同梱の html2canvas /
 ### 4. タッチ操作でうまくドラッグできない
 
 `StageCanvas` は Pointer Events + `touch-action: none` で実装されています。ブラウザ / 拡張機能が pointer イベントを横取りしていないか確認してください。
+
+### 5. 本番でだけ `/api` が 500（`FUNCTION_INVOCATION_FAILED`）になる
+
+`package.json` が `type:module` のため、Vercel は `/api/*.ts` をバンドルせず `.js` に変換します。相対 import に拡張子が無い（`'./_lib/auth'`）と Node の ESM ローダが `ERR_MODULE_NOT_FOUND` になり、全関数が起動に失敗します。`/api` 内の相対 import は必ず拡張子 `.js` 付き（`'./_lib/auth.js'`）で書いてください。型チェック（`npm run check:api`）は `.js` 付きでも通り、`npm run build` などローカルでは再現しないため、本番で初めて顕在化します。

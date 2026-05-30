@@ -36,6 +36,7 @@
 
 このアプリは **静的 Vite SPA（フロント）+ Vercel Serverless Functions（`/api`）+ KV** の構成。GitHub 連携（独立リポジトリ `tabear25/yosakoi_formation_editor`）で `main` へ push すると自動デプロイされる。
 
+- **本番URL**: https://yosakoi-formation-editor.vercel.app （2026-05-30 公開・稼働中。ログイン／チーム別自動保存／合言葉共有まで本番で動作確認済み）。
 - 設定は `vercel.json`（`framework=vite` / `buildCommand=npm run build` / `outputDirectory=dist`）。`/api/*.ts` は Vercel が自動的にサーバー関数として検出する。
 - **`/api` は ESM・相対 import に拡張子 `.js` 必須**: `package.json` が `type:module` のため、Vercel は `/api/*.ts` を**バンドルせず** `.js` に変換する。相対 import は必ず拡張子付きで書く（例 `from './_lib/auth.js'`、ソースは `.ts` でも `.js` と書く）。付け忘れると本番のみ `ERR_MODULE_NOT_FOUND` → `FUNCTION_INVOCATION_FAILED`(500) で全関数が起動失敗する（ローカルの型チェック/ビルドでは気づけない）。
 - **必要な環境変数**（Vercel の Settings → Environment Variables で設定。値はコード/Git に置かない）: `APP_TEAMS`（チーム別ログインの JSON 配列。例 `[{"id":"teamA","password":"...","name":"チームA"}]`。id は半角英数・`-`・`_` のみで KV キーに使う。チーム追加はこの値を編集して再デプロイ）, `SESSION_SECRET`（トークン署名用のランダム文字列）, KV 接続情報（`KV_REST_API_URL` / `KV_REST_API_TOKEN` 等。Storage 連携が自動注入）。雛形は `.env.example`。
