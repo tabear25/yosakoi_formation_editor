@@ -3,8 +3,6 @@
 よさこいのフォーメーション表を作成・編集し、画像 (PNG) / PDF に書き出す Web アプリです。
 フロントは **Vite + React 18 + TypeScript + Tailwind CSS** の SPA、バックエンドは **Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）**。**ログイン（チーム別 ID/PW）・チームごとのクラウド自動保存・合言葉での読み取り専用共有**に対応しています。
 
-> 📘 **AI / 開発者向けの詳細**: 設計判断や状態管理の方針は [`CLAUDE.md`](./CLAUDE.md)、経緯の引き継ぎメモは [`.claude/SESSION_SUMMARY.md`](./.claude/SESSION_SUMMARY.md) を参照してください。
-
 ## できること
 
 - 複数シーンをタイムラインで切替（追加 / 複製 / 並べ替え / 改名 / 削除）。アニメ再生はなし
@@ -65,14 +63,6 @@
   ```bash
   npm install
   ```
-
-> この PC にはシステム Node/npm が無いため、ポータブル Node を `.tooling/node-v24.16.0-win-x64`（git 管理外）に展開して使用しています。実行時は PATH に前置きしてください。
->
-> ```powershell
-> $env:Path = "C:\Users\str06\private_workplace\yosakoi_formation\.tooling\node-v24.16.0-win-x64;$env:Path"
-> ```
->
-> 日常運用では公式 Node の導入を推奨します。
 
 ## アーキテクチャ
 
