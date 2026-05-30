@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZIN（陣）— よさこいの隊形エディタ</title>
+<meta name="description" content="ZIN（陣）は、よさこいチームのための隊形エディタ。ドラッグで踊り子を配置し、シーンごとの隊形を作成。横一列・円・三角などのワンタッチ整列、PNG/PDF書き出し、合言葉での読み取り専用共有に対応。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="nav" id="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="#top" aria-label="ZIN ホーム">
+      <svg class="brand__mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <rect width="40" height="40" rx="11" fill="#4f46e5"/>
+        <circle cx="13" cy="14" r="3" fill="#f97316"/>
+        <circle cx="27" cy="14" r="3" fill="#22c55e"/>
+        <circle cx="20" cy="26" r="3" fill="#ec4899"/>
+        <text x="20" y="35" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="'Zen Kaku Gothic New',sans-serif">陣</text>
+      </svg>
+      <span>ZIN<span style="color:var(--indigo-500);font-weight:700;font-size:.7em;margin-left:2px;">陣</span></span>
+    </a>
+    <nav class="nav__links" aria-label="セクション">
+      <a href="#features">機能</a>
+      <a href="#align">整列</a>
+      <a href="#export">書き出し</a>
+      <a href="#share">共有</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="hero__bg"><div class="hero__grid"></div></div>
+  <div class="wrap hero__inner">
+    <span class="eyebrow reveal"><span class="dots"><i style="background:var(--g1)"></i><i style="background:var(--g4)"></i><i style="background:var(--g6)"></i><i style="background:var(--g8)"></i></span>よさこいチームのための隊形エディタ</span>
+    <h1 class="reveal" style="margin-top:20px">すべての踊り子に、羅針盤を。</h1>
+    <p class="hero__sub reveal" style="text-align: left">手書き、広告付きのアプリで作ったフォメを一枚ずつスクショするのももう終わり。 
+徹夜で作ったフォメをラインに載せ忘れて、違ったフォメが踊り子に伝わってるのももう終わり。 
+踊り子から「自分フォメに入っていないんですけど」と言われるのももう終わり。 
+フォメづくりの「めんどくさい」を過去のものに。
+踊り子にとってのただ一つの羅針盤を。 </p>
+    <div class="hero__cta reveal">
+      <a class="btn btn--primary btn--lg" href="mailto:katakuma4625@gmail.com?subject=ZIN%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E7%99%BA%E8%A1%8C%E3%81%AE%E4%BE%9D%E9%A0%BC&amp;body=%E3%83%81%E3%83%BC%E3%83%A0%E5%90%8D%EF%BC%9A%0D%0A%E4%BB%A3%E8%A1%A8%E8%80%85%E5%90%8D%EF%BC%9A%0D%0A%E4%BA%BA%E6%95%B0%EF%BC%9A%0D%0A%E5%B8%8C%E6%9C%9BID%EF%BC%88%E5%8D%8A%E8%A7%92%E8%8B%B1%E6%95%B0%E3%83%BB-%E3%83%BB_%EF%BC%89%EF%BC%9A%0D%0A%E5%B8%8C%E6%9C%9B%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%EF%BC%9A%0D%0A%0D%0AZIN%E3%81%AE%E5%88%A9%E7%94%A8%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E7%99%BA%E8%A1%8C%E3%82%92%E5%B8%8C%E6%9C%9B%E3%81%97%E3%81%BE%E3%81%99%E3%80%82">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        アカウント発行を依頼する
+      </a>
+      <a class="btn btn--ghost btn--lg" href="#features">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        できることを見る
+      </a>
+    </div>
+    <div class="hero__note reveal">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>最大 〜60 人規模</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>PNG / PDF 書き出し</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>PC・タブレット・スマホ対応</span>
+    </div>
+  </div>
+
+  <!-- editor mock -->
+  <div class="wrap mock-shell reveal">
+    <div class="mock">
+      <div class="mock__bar">
+        <div class="mock__title">
+          <svg width="18" height="18" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="9" fill="#4f46e5"/><text x="20" y="29" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" font-family="'Zen Kaku Gothic New',sans-serif">陣</text></svg>
+          <span class="doc">演舞2026 ／ 本祭バージョン</span>
+        </div>
+        <span class="mock__save"><span class="pulse"></span>保存済み</span>
+        <div class="mock__bar-actions">
+          <span class="mock__chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>共有</span>
+          <span class="mock__chip mock__chip--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>書き出し</span>
+        </div>
+      </div>
+      <div class="mock__body">
+        <aside class="mock__roster">
+          <h4>名簿（10名）</h4>
+          <div class="roster-item"><span class="swatch" style="background:var(--g1)"></span>あおい</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g2)"></span>はると</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g3)"></span>ゆい</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g4)"></span>そうた</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g5)"></span>みお</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g6)"></span>れん</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g7)"></span>さくら</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g8)"></span>かいと</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g9)"></span>ひなた</div>
+          <div class="roster-item"><span class="swatch" style="background:var(--g10)"></span>つむぎ</div>
+        </aside>
+        <div class="mock__stage-wrap">
+          <div class="stage" id="heroStage">
+            <span class="stage__label">客席</span>
+          </div>
+        </div>
+      </div>
+      <div class="mock__timeline">
+        <div class="scene-thumb active"><div class="scenebox" id="sb1"></div><span>オープニング</span></div>
+        <div class="scene-thumb"><div class="scenebox" id="sb2"></div><span>サビ</span></div>
+        <div class="scene-thumb"><div class="scenebox" id="sb3"></div><span>S3 大円陣</span></div>
+        <div class="scene-thumb"><div class="scenebox" id="sb4"></div><span>ラスト</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+  <div class="wrap"><div class="stats__grid">
+    <div class="stat reveal"><b>〜60<span style="font-size:.5em">人</span></b><span>1チームの最大規模</span></div>
+    <div class="stat reveal"><b>5<span style="font-size:.5em">種</span></b><span>ワンタッチ整列パターン</span></div>
+    <div class="stat reveal"><b>2<span style="font-size:.5em">形式</span></b><span>PNG・PDF で書き出し</span></div>
+    <div class="stat reveal"><b>0<span style="font-size:.5em">円</span></b><span>会員はチームに発行</span></div>
+  </div></div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dots"><i style="background:var(--g5)"></i><i style="background:var(--g7)"></i><i style="background:var(--g9)"></i></span>FEATURES</span>
+      <h2>フォメづくりに必要なものを、
+ぜんぶ。</h2>
+      <p>「やりたいこと」、全部できる。 ブラウザだけで、面倒なアプリのインストールは不要です。</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/></svg></div>
+        <h3>複数シーンをタイムラインで</h3>
+        <p>オープニングからラストまで。シーンを追加・複製・並べ替え・改名・削除して、曲の流れに沿ったフォメを組み立てられます。</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg></div>
+        <h3>ドラッグで自在に配置</h3>
+        <p>マウスでもタッチでも同じ操作感。ズーム・パンで寄って確認、適当にサッと並べてもグリッド吸着できれいに整列。指でもPCでも思いどおりに動かせます。</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>名簿で踊り子を管理</h3>
+        <p>名前とグループ色で踊り子を登録。マーカーは色＋名前で表示されるので、どの隊・どのパートが今どこにいるか、ひと目でわかります。
+メンバーの追加忘れも過去のものです。</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg></div>
+        <h3>ステージを実寸で設定</h3>
+        <p>長方形ステージのサイズを自由に切替。横幅・奥行(m)を調整するだけで、全ての会場に対応したフォメが作れます。
+パレードにも対応しています。</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM15 13a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2z"/><path d="M11 7h4a2 2 0 0 1 2 2v2M13 17H9a2 2 0 0 1-2-2v-2"/></svg></div>
+        <h3>グループドラッグ</h3>
+        <p>複数選択して、形をくずさず「そのまま」一括移動。隊ごと・列ごとのスライド移動が、ひとつのドラッグで完了します。
+選択した人以外が勝手に移動する「イイ感じに」機能も搭載。</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/><path d="M21 3v6h-6"/></svg></div>
+        <h3>崩れない相対配置</h3>
+        <p>ステージ寸法を変えても、フォメがぐちゃぐちゃになることはありません。
+つまり、1つフォメを作れば全ステージ/パレード会場に合わせたフォメが完成します。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ALIGNMENT DEMO ================= -->
+<section class="section" id="align" style="background:var(--slate-50); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="demo">
+      <div class="demo__stagecard reveal">
+        <div class="demo__stage" id="demoStage"></div>
+        <div class="demo__audience">▼ 客 席 ▼</div>
+      </div>
+      <div class="demo__controls reveal">
+        <span class="eyebrow"><span class="dots"><i style="background:var(--g2)"></i><i style="background:var(--g4)"></i><i style="background:var(--g8)"></i></span>ONE-TOUCH, EVERYTHING</span>
+        <h2 style="margin-top:14px">きれいな隊形が、 
+ボタンひとつ。</h2>
+        <p>バラバラの踊り子を、選んだ形にピタッと整列。下のボタンを押して、実際の動きを試してみてください。</p>
+        <div class="shape-btns" id="shapeBtns">
+          <button class="shape-btn active" data-shape="row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="4" cy="12" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="14" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>横一列</button>
+          <button class="shape-btn" data-shape="col"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="4" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="12" cy="14" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>縦一列</button>
+          <button class="shape-btn" data-shape="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>円</button>
+          <button class="shape-btn" data-shape="grid"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="7" r="1.6"/><circle cx="12" cy="7" r="1.6"/><circle cx="17" cy="7" r="1.6"/><circle cx="7" cy="14" r="1.6"/><circle cx="12" cy="14" r="1.6"/><circle cx="17" cy="14" r="1.6"/></svg>格子</button>
+          <button class="shape-btn" data-shape="triangle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 4L3 19h18z"/></svg>三角</button>
+        </div>
+        <div class="demo__hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>整列後はそのまま手で微調整できます。実際の画面では名前を各アイコンの下に表示できます。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPORT ================= -->
+<section class="section" id="export">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__text reveal">
+        <span class="eyebrow"><span class="dots"><i style="background:var(--g6)"></i><i style="background:var(--g3)"></i></span>INSTANT SHARE</span>
+        <h2>そのまま配れる、隊形表に。</h2>
+        <p>画面で組んだ隊形は、ワンクリックで画像に。</p>
+        <ul class="checklist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>表示中シーンを PNGで。チームにサッと共有。</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>日本語の名前も<b>くっきり描画</b>。文字化けの心配なし。</span></li>
+        </ul>
+      </div>
+      <div class="split__media reveal">
+        <div class="sheet-stack">
+          <div class="sheet sheet--back2"><div class="sheet__stage"></div></div>
+          <div class="sheet sheet--back"><div class="sheet__stage"></div></div>
+          <div class="sheet">
+            <div class="sheet__head"><b>演舞2026 ／ S3 大円陣</b><span class="sheet__badge">PDF · 3 / 4</span></div>
+            <div class="sheet__stage" id="sheetStage"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SHARE ================= -->
+<section class="section" id="share" style="background:var(--slate-50); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="split split--rev">
+      <div class="split__text reveal">
+        <span class="eyebrow"><span class="dots"><i style="background:var(--g8)"></i><i style="background:var(--g1)"></i></span>DIRECT SHARE</span>
+        <h2>合言葉ひとつで、チームに共有。</h2>
+        <p>合言葉つきのURLで配布。受け取った人はログイン不要・読み取り専用で閲覧でき、URL一つでメンバーに最新のフォメを共有できます。
+フォメの共有忘れを過去のものに。</p>
+        <ul class="checklist">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>メンバーは<b>アカウント登録なし</b>でその場で確認。</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>読み取り専用だから<b>うっかり編集の心配なし</b>。</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg><span>編集はチームの保存と分離。<b>本体には影響しません</b>。</span></li>
+        </ul>
+      </div>
+      <div class="split__media reveal">
+        <div class="share-card">
+          <div class="share-card__top">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--indigo-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+            隊形を共有
+            <span class="ro">読み取り専用</span>
+          </div>
+          <div class="share-card__body">
+            <div class="url-pill">
+              <span>zin.app/?share=<span class="key">natsu-matsuri</span></span>
+              <button type="button">コピー</button>
+            </div>
+            <div class="share-flow">
+              <div class="share-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 0 10h-3M9 17H6A5 5 0 0 1 6 7h3M8 12h8"/></svg><span>合言葉つきURL</span></div>
+              <span class="share-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              <div class="share-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg><span>ログイン不要で閲覧</span></div>
+              <span class="share-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+              <div class="share-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span>PNG / PDF 出力</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESPONSIVE (dark) ================= -->
+<section class="section dark">
+  <div class="dark__glow"></div>
+  <div class="wrap" style="position:relative;z-index:1">
+    <div class="section-head reveal">
+      <span class="eyebrow" style="color:var(--indigo-300)"><span class="dots"><i style="background:var(--g9)"></i><i style="background:var(--g5)"></i><i style="background:var(--g4)"></i></span>ANY DEVICE, ANYWHERE, ANYTIME</span>
+      <h2>いつでも、どこでも、何でも</h2>
+      <p>PC・タブレット・スマホに最適化。タッチ操作にも対応しています。
+フォメは自動保存されるので、スマホで適当に作ったフォメをPCで整える、なんてこともできます。</p>
+    </div>
+    <div class="devices reveal">
+      <div>
+        <div class="device device--pc"><div class="screen"><div class="topbar"><i></i><i></i><i></i></div><div class="ministage" id="dvPc" style="height:203px"></div></div></div>
+        <div class="device__cap">PC ／ 名簿は左に固定</div>
+      </div>
+      <div>
+        <div class="device device--tab"><div class="screen"><div class="topbar"><i></i><i></i></div><div class="ministage" id="dvTab" style="height:218px"></div></div></div>
+        <div class="device__cap">タブレット ／ タッチで配置</div>
+      </div>
+      <div>
+        <div class="device device--phone"><div class="screen"><div class="topbar"><i></i></div><div class="ministage" id="dvPhone" style="height:218px"></div></div></div>
+        <div class="device__cap">スマホ ／ ドロワー表示</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STEPS ================= -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dots"><i style="background:var(--g1)"></i><i style="background:var(--g2)"></i><i style="background:var(--g3)"></i></span>HOW IT WORKS</span>
+      <h2>はじめ方は、3ステップ。</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step__line"></div>
+        <div class="step__num">1</div>
+        <h3>ログインして開く</h3>
+        <p>チームに発行されたID・パスワードでログイン。編集内容はクラウドに自動保存され、別の端末でも続きから。</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__line"></div>
+        <div class="step__num">2</div>
+        <h3>踊り子を配置する</h3>
+        <p>名簿に踊り子を登録し、ステージへドラッグ。整列ボタンで形を作り、シーンを足して隊形台本を組み立て。</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">3</div>
+        <h3>書き出して共有</h3>
+        <p>PNG・PDFに書き出して印刷、または合言葉URLでチームに共有。受け取った人はログイン不要で閲覧できます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="section" id="faq" style="background:var(--slate-50); border-top:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="dots"><i style="background:var(--g7)"></i><i style="background:var(--g6)"></i></span>FAQ</span>
+      <h2>よくある質問</h2>
+    </div>
+    <div class="faq">
+      <div class="faq-item reveal"><button class="faq-q">料金はかかりますか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>無料を想定しています。編集にはチームごとに発行されるID・パスワードでのログインが必要です。
+アカウント発行はログイン画面の依頼リンクから管理者へどうぞ。
+※今後の利用チーム数の増加/利用頻度も踏まえ、有料とする場合もあります。その場合は1チーム2000円/月を想定しています。</p></div></div>
+      <div class="faq-item reveal"><button class="faq-q">編集にはログインが必要ですか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>はい。編集はログイン後のみ可能です（ログインしないと編集画面に入れないため、うっかり内容が消える心配がありません）。
+合言葉URLで共有された隊形は、ログイン不要・読み取り専用で誰でも閲覧・書き出しできます。</p></div></div>
+      <div class="faq-item reveal"><button class="faq-q">スマホでも使えますか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>使えます。PC・タブレット・スマホに対応し、タッチでのドラッグ配置・ズーム・パンが可能です。スマホでは名簿がドロワー、シーン一覧が下部の横スクロールで表示されます。</p></div></div>
+      <div class="faq-item reveal"><button class="faq-q">共有相手もログインが必要ですか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>不要です。合言葉つきのURLを開くだけで、ログインなしの読み取り専用ビューが表示されます。閲覧者はその場でPNG / PDFの書き出しもできますが、編集はできません。</p></div></div>
+      <div class="faq-item reveal"><button class="faq-q">何人まで配置できますか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>およそ60人規模までを想定しています。大人数のチームでも、グループドラッグや整列機能でまとめて操作できるので、隊形づくりがスムーズです。</p></div></div>
+      <div class="faq-item reveal"><button class="faq-q">作ったデータはどこに保存されますか？<span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button><div class="faq-a"><p>編集すると自動でクラウドに保存され、リロードや別端末でも復元できます。
+ヘッダーに「保存中…／保存済み／未保存」の状態が表示されるので、保存状態も一目で確認できます。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="section--tight">
+  <div class="wrap">
+    <div class="cta-band reveal">
+      <div class="cta-band__dots" id="ctaDots" aria-hidden="true"></div>
+      <h2>次の演舞を、ZINでレベルアップ</h2>
+      <p>フォメづくりの「めんどくさい」はもう終わり。フォメづくりではなく、振りづくりや踊り子のレベルアップにもっと時間を。</p>
+      <div class="hero__cta" style="justify-content:center">
+        <a class="btn btn--light btn--lg" href="mailto:katakuma4625@gmail.com?subject=ZIN%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E7%99%BA%E8%A1%8C%E3%81%AE%E4%BE%9D%E9%A0%BC&amp;body=%E3%83%81%E3%83%BC%E3%83%A0%E5%90%8D%EF%BC%9A%0D%0A%E4%BB%A3%E8%A1%A8%E8%80%85%E5%90%8D%EF%BC%9A%0D%0A%E4%BA%BA%E6%95%B0%EF%BC%9A%0D%0A%E5%B8%8C%E6%9C%9BID%EF%BC%88%E5%8D%8A%E8%A7%92%E8%8B%B1%E6%95%B0%E3%83%BB-%E3%83%BB_%EF%BC%89%EF%BC%9A%0D%0A%E5%B8%8C%E6%9C%9B%E3%83%91%E3%82%B9%E3%83%AF%E3%83%BC%E3%83%89%EF%BC%9A%0D%0A%0D%0AZIN%E3%81%AE%E5%88%A9%E7%94%A8%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E7%99%BA%E8%A1%8C%E3%82%92%E5%B8%8C%E6%9C%9B%E3%81%97%E3%81%BE%E3%81%99%E3%80%82">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          アカウント発行を依頼する
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__inner">
+      <div>
+        <a class="brand" href="#top">
+          <svg class="brand__mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#4f46e5"/><circle cx="13" cy="14" r="3" fill="#f97316"/><circle cx="27" cy="14" r="3" fill="#22c55e"/><circle cx="20" cy="26" r="3" fill="#ec4899"/><text x="20" y="35" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="'Zen Kaku Gothic New',sans-serif">陣</text></svg>
+          <span>ZIN<span style="color:var(--indigo-500);font-weight:700;font-size:.7em;margin-left:2px;">陣</span></span>
+        </a>
+        <p class="footer__desc">よさこいチームのための隊形エディタ。ドラッグで配置し、整列・書き出し・共有まで、ブラウザひとつで。</p>
+      </div>
+      <div class="footer__links">
+        <div class="footer__col">
+          <h5>プロダクト</h5>
+          <a href="#features">機能</a>
+          <a href="#align">整列</a>
+          <a href="#export">書き出し</a>
+          <a href="#share">共有</a>
+        </div>
+        <div class="footer__col">
+          <h5>リンク</h5>
+          <a href="#faq">よくある質問</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 ZIN（陣）— Yosakoi Formation Editor</span>
+      <span>Built with Vite · React · Vercel</span>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
