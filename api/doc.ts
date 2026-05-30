@@ -1,7 +1,7 @@
 // /api/doc — チーム共通のライブドキュメントの取得(GET)と保存(PUT)。いずれも要トークン。
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getAuthTeam } from './_lib/auth'
-import { getDoc, putDoc, type StoredDoc } from './_lib/store'
+import { getAuthTeam } from './_lib/auth.js'
+import { getDoc, putDoc, type StoredDoc } from './_lib/store.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {

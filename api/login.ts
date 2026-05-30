@@ -1,6 +1,6 @@
 // POST /api/login — チーム共通 ID/PW を照合し、一致すれば署名トークンを返す。
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { signToken, verifyCredentials } from './_lib/auth'
+import { signToken, verifyCredentials } from './_lib/auth.js'
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   try {
