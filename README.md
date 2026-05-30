@@ -3,8 +3,6 @@
 よさこいのフォーメーション表を作成・編集し、画像 (PNG) / PDF に書き出す Web アプリです。
 フロントは **Vite + React 18 + TypeScript + Tailwind CSS** の SPA、バックエンドは **Vercel Serverless Functions（`/api`）+ KV（Vercel KV / Upstash Redis）**。**ログイン（チーム別 ID/PW）・チームごとのクラウド自動保存・合言葉での読み取り専用共有**に対応しています。
 
-> 🌐 **公開中**: <https://yosakoi-formation-editor.vercel.app> — `main` への push で Vercel が本番に自動デプロイします（2026-05-30 公開・稼働中）。
-
 > 📘 **AI / 開発者向けの詳細**: 設計判断や状態管理の方針は [`CLAUDE.md`](./CLAUDE.md)、経緯の引き継ぎメモは [`.claude/SESSION_SUMMARY.md`](./.claude/SESSION_SUMMARY.md) を参照してください。
 
 ## できること
