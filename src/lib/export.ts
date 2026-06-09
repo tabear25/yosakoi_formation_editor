@@ -71,13 +71,14 @@ function drawSceneToCanvas(state: DocState, scene: Scene): HTMLCanvasElement {
     ctx.restore()
   }
 
-  // 踊り子マーカー
+  // 踊り子マーカー（④ このシーンに出ない人は描かない）
   const colorOf = new Map(state.groups.map((g) => [g.id, g.color]))
+  const absent = new Set(scene.absent ?? [])
   const r = Math.max(9, EXPORT_WIDTH * 0.009)
   const fontSize = Math.max(13, Math.round(EXPORT_WIDTH * 0.013))
   state.dancers.forEach((d) => {
     const pos = scene.positions[d.id]
-    if (!pos) return
+    if (!pos || absent.has(d.id)) return
     const cx = ox + pos.x * stageW
     const cy = oy + pos.y * stageH
     ctx.beginPath()

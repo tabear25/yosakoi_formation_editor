@@ -1,12 +1,28 @@
-import { ArrowUp, Maximize2, ZoomIn, ZoomOut } from 'lucide-react'
+import {
+  AlertTriangle,
+  ArrowUp,
+  Maximize2,
+  Redo2,
+  Undo2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react'
 import {
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
-import type { Vec } from '@/types'
-import { aspectOf, clamp01, snapToGrid } from '@/lib/geometry'
+import type { Scene, Vec } from '@/types'
+import {
+  aspectOf,
+  clamp01,
+  DEFAULT_MIN_SPACING_M,
+  findCrowding,
+  snapToGrid,
+} from '@/lib/geometry'
+import { interpolatePositions, isPresent, presentDancers } from '@/lib/scene'
 import { useApp } from '@/store/ProjectContext'
 import { StageView } from './StageView'
 
@@ -44,6 +60,13 @@ export function StageCanvas() {
     setSelectedIds,
     selectionMode,
     snapEnabled,
+    previewT,
+    beginTransaction,
+    endTransaction,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useApp()
 
   const [viewportRef, size] = useElementSize()
@@ -51,6 +74,29 @@ export function StageCanvas() {
   const dragRef = useRef<Drag | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<Vec>({ x: 0, y: 0 })
+
+  const previewActive = previewT !== null
+  const minSpacing = state.stage.minSpacingM ?? DEFAULT_MIN_SPACING_M
+
+  // ③ 接近チェック（編集中の現在シーンの出演者のみ）。プレビュー中は出さない。
+  const crowd = useMemo(() => {
+    if (previewActive) return { ids: new Set<string>(), pairs: 0 }
+    const items = presentDancers(currentScene, state.dancers)
+      .map((d) => ({ id: d.id, pos: currentScene.positions[d.id] }))
+      .filter((it): it is { id: string; pos: Vec } => !!it.pos)
+    return findCrowding(items, state.stage, minSpacing)
+  }, [previewActive, currentScene, state.dancers, state.stage, minSpacing])
+
+  // ⑦ プレビュー中は補間した合成シーンを読み取り専用で描く
+  const previewScene = useMemo<Scene | null>(() => {
+    if (!previewActive) return null
+    const items = interpolatePositions(state.scenes, state.dancers, previewT)
+    const positions: Record<string, Vec> = {}
+    for (const it of items) positions[it.id] = it.pos
+    return { id: '__preview', name: '', positions }
+  }, [previewActive, previewT, state.scenes, state.dancers])
+
+  const sceneToRender = previewScene ?? currentScene
 
   const aspect = aspectOf(state.stage)
   const padX = 20
@@ -77,20 +123,35 @@ export function StageCanvas() {
     )
   }
 
+  function startPan(e: ReactPointerEvent) {
+    dragRef.current = {
+      kind: 'pan',
+      startX: e.clientX,
+      startY: e.clientY,
+      panX: pan.x,
+      panY: pan.y,
+    }
+  }
+
   function onPointerDown(e: ReactPointerEvent) {
-    const markerEl = (e.target as HTMLElement).closest('[data-dancer-id]')
     viewportRef.current?.setPointerCapture(e.pointerId)
+    // プレビュー中は編集不可（パン/ズームのみ許可）
+    if (previewActive) {
+      startPan(e)
+      return
+    }
+    const markerEl = (e.target as HTMLElement).closest('[data-dancer-id]')
     if (markerEl) {
       const id = markerEl.getAttribute('data-dancer-id')!
       if (selectionMode) {
         toggleSelect(id)
         dragRef.current = null
       } else if (selectedIds.includes(id) && selectedIds.length > 1) {
-        // 選択中のマーカーを掴んだら、選択した全員を一緒に動かす（掴んだ人が基準）
+        // 選択中のマーカーを掴んだら、選択した全員（出演者のみ）を一緒に動かす
         const base: Record<string, Vec> = {}
         for (const sid of selectedIds) {
           const p = currentScene.positions[sid]
-          if (p) base[sid] = p
+          if (p && isPresent(currentScene, sid)) base[sid] = p
         }
         dragRef.current = {
           kind: 'group',
@@ -98,17 +159,13 @@ export function StageCanvas() {
           startPointer: clientToNorm(e.clientX, e.clientY),
           base,
         }
+        beginTransaction()
       } else {
         dragRef.current = { kind: 'dancer', id }
+        beginTransaction()
       }
     } else {
-      dragRef.current = {
-        kind: 'pan',
-        startX: e.clientX,
-        startY: e.clientY,
-        panX: pan.x,
-        panY: pan.y,
-      }
+      startPan(e)
     }
   }
 
@@ -149,6 +206,8 @@ export function StageCanvas() {
   }
 
   function onPointerUp(e: ReactPointerEvent) {
+    // ドラッグ（踊り子/グループ）はここで1履歴ステップを確定する
+    if (dragRef.current && dragRef.current.kind !== 'pan') endTransaction()
     dragRef.current = null
     try {
       viewportRef.current?.releasePointerCapture(e.pointerId)
@@ -182,12 +241,13 @@ export function StageCanvas() {
             <StageView
               ref={stageRef}
               stage={state.stage}
-              scene={currentScene}
+              scene={sceneToRender}
               dancers={state.dancers}
               groups={state.groups}
               width={boxW}
               height={boxH}
-              selectedIds={selectedIds}
+              selectedIds={previewActive ? [] : selectedIds}
+              crowdedIds={previewActive ? undefined : crowd.ids}
             />
             {state.stage.kind === 'stage' ? (
               <div className="absolute inset-x-0 bottom-full mb-1 text-center text-xs font-medium text-slate-500">
@@ -200,6 +260,43 @@ export function StageCanvas() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ② アンドゥ/リダゥ（PC・タブレット・スマホ共通の常設ボタン）。プレビュー中は隠す。 */}
+      {!previewActive && (
+        <div
+          className="absolute left-3 top-3 flex items-center gap-1 rounded-lg border border-slate-200 bg-white/90 p-1 shadow-sm backdrop-blur"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <button
+            className="rounded p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label="元に戻す"
+            title="元に戻す（Ctrl/⌘+Z）"
+          >
+            <Undo2 size={18} />
+          </button>
+          <button
+            className="rounded p-2 text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label="やり直す"
+            title="やり直す（Ctrl/⌘+Shift+Z）"
+          >
+            <Redo2 size={18} />
+          </button>
+        </div>
+      )}
+
+      {/* ③ 接近警告バッジ */}
+      {!previewActive && crowd.pairs > 0 && (
+        <div
+          className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 shadow-sm"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <AlertTriangle size={13} /> 接近 {crowd.pairs} 組
         </div>
       )}
 

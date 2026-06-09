@@ -1,4 +1,4 @@
-import { FileDown, Image as ImageIcon, LogOut, Share2, Users } from 'lucide-react'
+import { FileDown, FolderOpen, Image as ImageIcon, LogOut, Share2, Users } from 'lucide-react'
 import type { SaveStatus } from '@/hooks/useAutoSave'
 import { exportPdf, exportScenePng } from '@/lib/export'
 import { clearToken } from '@/lib/session'
@@ -9,9 +9,11 @@ import { Button } from './ui'
 export function AppHeader({
   onOpenRoster,
   onOpenShare,
+  onOpenFormations,
 }: {
   onOpenRoster: () => void
   onOpenShare: () => void
+  onOpenFormations: () => void
 }) {
   const { state, currentScene, dispatch, saveStatus, dirty, saveNow } = useApp()
 
@@ -37,6 +39,15 @@ export function AppHeader({
         onChange={(e) => dispatch({ type: 'SET_TITLE', title: e.target.value })}
         aria-label="フォーメーション表のタイトル"
       />
+
+      <button
+        onClick={onOpenFormations}
+        className="shrink-0 rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+        aria-label="フォーメーション一覧"
+        title="フォーメーションの切替・新規・複製・削除"
+      >
+        <FolderOpen size={18} />
+      </button>
 
       <SaveIndicator status={saveStatus} dirty={dirty} />
 

@@ -6,6 +6,8 @@ import {
   applyAlign,
   clamp01,
   defaultPosition,
+  distanceM,
+  findCrowding,
   snapToGrid,
 } from './geometry'
 import type { StageConfig } from '@/types'
@@ -82,5 +84,32 @@ describe('alignTriangle', () => {
 describe('applyAlign', () => {
   it('選択が1人以下なら何もしない', () => {
     expect(applyAlign('row', [{ id: 'a', pos: { x: 0, y: 0 } }], 1)).toEqual({})
+  })
+})
+
+describe('distanceM', () => {
+  it('正規化座標を実寸距離(m)に換算する（10m幅・10m奥行）', () => {
+    expect(distanceM({ x: 0, y: 0 }, { x: 0.1, y: 0 }, stage)).toBeCloseTo(1)
+    expect(distanceM({ x: 0, y: 0 }, { x: 0, y: 0.5 }, stage)).toBeCloseTo(5)
+    expect(distanceM({ x: 0, y: 0 }, { x: 0.3, y: 0.4 }, stage)).toBeCloseTo(5)
+  })
+})
+
+describe('findCrowding', () => {
+  const items = [
+    { id: 'a', pos: { x: 0, y: 0 } },
+    { id: 'b', pos: { x: 0.02, y: 0 } }, // a と 0.2m
+    { id: 'c', pos: { x: 0.9, y: 0.9 } },
+  ]
+  it('しきい値より近いペアと当事者を返す', () => {
+    const r = findCrowding(items, stage, 0.5)
+    expect(r.pairs).toBe(1)
+    expect([...r.ids].sort()).toEqual(['a', 'b'])
+  })
+  it('しきい値0なら無効（常に空）', () => {
+    expect(findCrowding(items, stage, 0)).toEqual({ ids: new Set(), pairs: 0 })
+  })
+  it('十分離れていれば0件', () => {
+    expect(findCrowding(items, stage, 0.1).pairs).toBe(0)
   })
 })

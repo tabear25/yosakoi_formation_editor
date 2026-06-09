@@ -25,6 +25,9 @@ export type Scene = {
   id: string
   name: string
   positions: Record<string, Vec> // dancerId -> 正規化座標
+  // このシーンに「出ない」踊り子のID。未指定/空配列なら全員出演（既存データ互換）。
+  // 位置情報(positions)は保持したまま、表示・出力・整列の対象からだけ外す。
+  absent?: string[]
 }
 
 export type StageKind = 'stage' | 'parade'
@@ -34,6 +37,8 @@ export type StageConfig = {
   widthM: number // 横幅(m)
   depthM: number // 奥行(m)  stage:客席方向の奥行 / parade:進行方向の長さ
   gridM: number // グリッド間隔(m)
+  // 踊り子同士がこの距離(m)より近いと「接近」として警告する。未指定なら既定値を使う。0で無効。
+  minSpacingM?: number
 }
 
 // アプリが保持する「フォーメーション表」全体のドキュメント状態

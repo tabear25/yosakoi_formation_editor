@@ -5,6 +5,7 @@ import {
   MousePointer2,
   MoveHorizontal,
   MoveVertical,
+  PlayCircle,
   Settings2,
   Triangle,
   XCircle,
@@ -15,6 +16,7 @@ import { Button } from './ui'
 
 export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
   const {
+    state,
     dispatch,
     selectedIds,
     setSelectedIds,
@@ -22,13 +24,27 @@ export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
     setSelectionMode,
     snapEnabled,
     setSnapEnabled,
+    previewT,
+    setPreviewT,
   } = useApp()
 
   const count = selectedIds.length
-  const canAlign = count >= 2
+  const previewActive = previewT !== null
+  const canAlign = count >= 2 && !previewActive
+  const canPreview = state.scenes.length >= 2
 
   function align(kind: AlignKind) {
     dispatch({ type: 'ALIGN', kind, ids: selectedIds })
+  }
+
+  function togglePreview() {
+    if (previewActive) {
+      setPreviewT(null)
+    } else {
+      // 現在の場面を起点にプレビューを開始する
+      const idx = state.scenes.findIndex((s) => s.id === state.currentSceneId)
+      setPreviewT(idx < 0 ? 0 : idx)
+    }
   }
 
   // モバイルでは横1行のまま横スクロール。各ボタンは縮ませず自然幅を保ち、CJKの縦折り返しを防ぐ。
@@ -37,6 +53,7 @@ export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
       <Button
         size="sm"
         active={snapEnabled}
+        disabled={previewActive}
         onClick={() => setSnapEnabled(!snapEnabled)}
         title="グリッドに吸着して配置"
       >
@@ -48,6 +65,7 @@ export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
       <Button
         size="sm"
         active={selectionMode}
+        disabled={previewActive}
         onClick={() => setSelectionMode(!selectionMode)}
         title="マーカーをタップして整列対象を選ぶ"
       >
@@ -75,11 +93,27 @@ export function Toolbar({ onOpenSettings }: { onOpenSettings: () => void }) {
         <Triangle size={14} /> 三角
       </Button>
 
-      {count > 0 && (
+      {count > 0 && !previewActive && (
         <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])} title="選択を解除">
           <XCircle size={14} /> 解除
         </Button>
       )}
+
+      <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200" />
+
+      <Button
+        size="sm"
+        active={previewActive}
+        disabled={!canPreview}
+        onClick={togglePreview}
+        title={
+          canPreview
+            ? 'シーン間の動きをスライダーで確認'
+            : '場面が2つ以上あると使えます'
+        }
+      >
+        <PlayCircle size={14} /> 動きプレビュー
+      </Button>
 
       <Button
         size="sm"

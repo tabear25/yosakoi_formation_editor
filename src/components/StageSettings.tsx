@@ -1,4 +1,5 @@
 import type { StageKind } from '@/types'
+import { DEFAULT_MIN_SPACING_M } from '@/lib/geometry'
 import { useApp } from '@/store/ProjectContext'
 import { Button } from './ui'
 
@@ -59,6 +60,15 @@ export function StageSettings() {
         step={0.5}
         hint="グリッド吸着や目安の格子線の間隔です。"
         onChange={(gridM) => dispatch({ type: 'SET_STAGE', patch: { gridM } })}
+      />
+
+      <NumberField
+        label="接近の警告間隔（m）"
+        value={stage.minSpacingM ?? DEFAULT_MIN_SPACING_M}
+        min={0}
+        step={0.1}
+        hint="踊り子同士がこの距離より近いと赤く警告します。0で無効。"
+        onChange={(minSpacingM) => dispatch({ type: 'SET_STAGE', patch: { minSpacingM } })}
       />
 
       <p className="text-[11px] leading-relaxed text-slate-400">

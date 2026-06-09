@@ -12,13 +12,24 @@ type Props = {
   width: number
   height: number
   selectedIds?: string[]
+  crowdedIds?: Set<string> // ③ 接近警告で赤く縁取りする踊り子ID
   markerSize?: number
 }
 
 // ステージ矩形（枠・グリッド・踊り子マーカー）の描画。
 // 座標変換のため、外側の ref はこの矩形 div に割り当てる。
 export const StageView = forwardRef<HTMLDivElement, Props>(function StageView(
-  { stage, scene, dancers, groups, width, height, selectedIds = [], markerSize = 22 },
+  {
+    stage,
+    scene,
+    dancers,
+    groups,
+    width,
+    height,
+    selectedIds = [],
+    crowdedIds,
+    markerSize = 22,
+  },
   ref,
 ) {
   const colorOf = useMemo(() => {
@@ -33,6 +44,7 @@ export const StageView = forwardRef<HTMLDivElement, Props>(function StageView(
   for (let y = sy; y < 0.999; y += sy) hLines.push(y * 100)
 
   const selected = new Set(selectedIds)
+  const absent = new Set(scene.absent ?? [])
 
   return (
     <div
@@ -73,9 +85,10 @@ export const StageView = forwardRef<HTMLDivElement, Props>(function StageView(
 
       {dancers.map((d) => {
         const pos = scene.positions[d.id]
-        if (!pos) return null
+        if (!pos || absent.has(d.id)) return null // ④ このシーンに出ない人は描かない
         const color = colorOf(d.groupId)
         const isSel = selected.has(d.id)
+        const isCrowded = crowdedIds?.has(d.id) ?? false
         return (
           <div
             key={d.id}
@@ -86,6 +99,8 @@ export const StageView = forwardRef<HTMLDivElement, Props>(function StageView(
             <div
               className={cn(
                 'rounded-full border-2 border-white shadow',
+                // 接近警告は outline、選択は ring を使い、両方ついても見分けられるようにする
+                isCrowded && 'outline outline-2 outline-offset-1 outline-red-500',
                 isSel && 'ring-2 ring-indigo-600 ring-offset-1',
               )}
               style={{ width: markerSize, height: markerSize, background: color }}

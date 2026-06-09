@@ -65,23 +65,89 @@ export async function login(id: string, password: string): Promise<string> {
   return data.token
 }
 
-// 保存済みドキュメントを読み込む（未保存なら null）
-export async function loadDoc(): Promise<DocState | null> {
-  const res = await request('/api/doc', { method: 'GET', auth: true })
+// ===== 複数フォーメーション =====
+
+export type FormationMeta = { id: string; title: string; updatedAt: number }
+export type FormationIndex = { items: FormationMeta[]; currentId: string }
+
+// チームのフォーメーション一覧（初回は旧データを自動移行）
+export async function listFormations(): Promise<FormationIndex> {
+  const res = await request('/api/formations', { method: 'GET', auth: true })
+  if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+  return (await res.json()) as FormationIndex
+}
+
+// 指定フォーメーションのドキュメントを読み込む（未保存なら null）。開いたものを「最後に開いた」に記録。
+export async function loadFormationDoc(formationId: string): Promise<DocState | null> {
+  const res = await request(`/api/doc?formation=${encodeURIComponent(formationId)}`, {
+    method: 'GET',
+    auth: true,
+  })
   if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
   const data = (await res.json()) as { doc: DocState | null }
   return data.doc
 }
 
-// 現在のドキュメントを保存する（自動保存の送信先）
-export async function saveDoc(doc: DocState): Promise<void> {
-  const res = await request('/api/doc', {
+// 指定フォーメーションへ保存する（自動保存の送信先）
+export async function saveFormationDoc(formationId: string, doc: DocState): Promise<void> {
+  const res = await request(`/api/doc?formation=${encodeURIComponent(formationId)}`, {
     method: 'PUT',
     auth: true,
     authFail: 'throw', // 保存中の401で編集画面を即破棄しない（バナーで再ログインを促す）
     body: JSON.stringify({ doc }),
   })
   if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+}
+
+type CreateResult = { id: string } & FormationIndex
+
+// 新規フォーメーションを作成する（初期 doc を保存）
+export async function createFormation(doc: DocState): Promise<CreateResult> {
+  const res = await request('/api/formations', {
+    method: 'POST',
+    auth: true,
+    authFail: 'throw',
+    body: JSON.stringify({ doc }),
+  })
+  if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+  return (await res.json()) as CreateResult
+}
+
+// 既存フォーメーションを複製する
+export async function duplicateFormation(fromId: string): Promise<CreateResult> {
+  const res = await request(`/api/formations?from=${encodeURIComponent(fromId)}`, {
+    method: 'POST',
+    auth: true,
+    authFail: 'throw',
+  })
+  if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+  return (await res.json()) as CreateResult
+}
+
+// フォーメーションを改名する
+export async function renameFormation(
+  id: string,
+  title: string,
+): Promise<{ items: FormationMeta[] }> {
+  const res = await request('/api/formations', {
+    method: 'PATCH',
+    auth: true,
+    authFail: 'throw',
+    body: JSON.stringify({ id, title }),
+  })
+  if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+  return (await res.json()) as { items: FormationMeta[] }
+}
+
+// フォーメーションを削除する（最後の1件は削除不可）
+export async function deleteFormation(id: string): Promise<FormationIndex> {
+  const res = await request(`/api/formations?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    auth: true,
+    authFail: 'throw',
+  })
+  if (!res.ok) throw new ApiError(res.status, await readErrorCode(res))
+  return (await res.json()) as FormationIndex
 }
 
 // 現在のドキュメントのスナップショットを共有し、合言葉を得る

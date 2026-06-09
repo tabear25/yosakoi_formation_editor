@@ -1,7 +1,40 @@
 import type { AlignKind, StageConfig, Vec } from '@/types'
 
+// ③ 接近チェックの既定しきい値（中心間の実寸距離, m）
+export const DEFAULT_MIN_SPACING_M = 0.5
+
 export function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v))
+}
+
+// 2点（正規化座標）間の実寸距離(m)。x方向は横幅、y方向は奥行でスケールする。
+export function distanceM(a: Vec, b: Vec, stage: StageConfig): number {
+  const dx = (a.x - b.x) * stage.widthM
+  const dy = (a.y - b.y) * stage.depthM
+  return Math.hypot(dx, dy)
+}
+
+// minSpacingM より近い（重なり含む）ペアを総当たりで検出する。
+// 返り値: ids=近すぎるペアに含まれる踊り子ID集合 / pairs=近すぎるペア数。
+// minSpacingM <= 0 のときは無効（常に空）。最大60人想定でO(n^2)でも十分軽い。
+export function findCrowding(
+  items: { id: string; pos: Vec }[],
+  stage: StageConfig,
+  minSpacingM: number,
+): { ids: Set<string>; pairs: number } {
+  const ids = new Set<string>()
+  let pairs = 0
+  if (minSpacingM <= 0) return { ids, pairs }
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      if (distanceM(items[i].pos, items[j].pos, stage) < minSpacingM) {
+        ids.add(items[i].id)
+        ids.add(items[j].id)
+        pairs += 1
+      }
+    }
+  }
+  return { ids, pairs }
 }
 
 // ステージの縦横比（横幅 / 奥行）。画面描画もこの比率を保つ。
