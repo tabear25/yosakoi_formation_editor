@@ -147,6 +147,38 @@ export function touchFormationMeta(
   }
 }
 
+// KV の接続診断結果（秘密情報は一切含めない）
+export type KvHealth =
+  | { ok: true }
+  | { ok: false; configured: boolean; error: string }
+
+// KV が実際に読み書きできるかを往復（set→get→del）で確認する。
+// 環境変数が無ければ Redis に触れず「未設定」として返す（例外を投げない）。
+export async function checkKvHealth(): Promise<KvHealth> {
+  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL
+  const token =
+    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) {
+    return { ok: false, configured: false, error: 'KV の接続情報が未設定です' }
+  }
+  try {
+    const key = 'health:ping'
+    await redis().set(key, 'ok', { ex: 60 })
+    const value = await redis().get<string>(key)
+    await redis().del(key)
+    if (String(value) !== 'ok') {
+      return { ok: false, configured: true, error: 'KV の往復テストに失敗しました' }
+    }
+    return { ok: true }
+  } catch (err) {
+    return {
+      ok: false,
+      configured: true,
+      error: err instanceof Error ? err.message : String(err),
+    }
+  }
+}
+
 // 合言葉で配布する読み取り専用スナップショット
 export async function getShare(code: string): Promise<StoredShare | null> {
   return (await redis().get<StoredShare>(SHARE_PREFIX + code)) ?? null

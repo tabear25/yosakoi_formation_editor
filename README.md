@@ -173,6 +173,8 @@ npm run preview
 
 `/api` と KV、環境変数が必要です。`npm run dev` 単体では `/api` が動かないため、`vercel dev` かデプロイ環境で確認してください。`APP_TEAMS`（JSON 配列）/ `SESSION_SECRET` と KV の接続情報が設定されているかを確認してください。`APP_TEAMS` の JSON が不正だとログイン API がエラーになります。
 
+まず **`/api/health`** をブラウザで開くと、設定状況を JSON で確認できます（`{ ok, checks: { appTeams, sessionSecret, kv } }`）。`ok: true` なら保存できる状態です。`kv.ok=false` なら KV 未接続・接続情報の誤り（`configured=false` は未設定）、`appTeams.ok=false` は `APP_TEAMS` の未設定/不正、`sessionSecret.ok=false` は `SESSION_SECRET` 未設定が原因です。さらに詳しい例外内容は Vercel の Functions ログ（`console.error` 出力）で確認できます。
+
 ### 3. ビルド時に 500kB 超のチャンク警告が出る
 
 jspdf 由来の警告で実害はありません。jspdf 同梱の html2canvas / dompurify は分割チャンクに入り、実行時には読み込まれません。
