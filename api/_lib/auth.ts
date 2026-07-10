@@ -69,6 +69,21 @@ function teams(): Team[] {
   return list
 }
 
+// APP_TEAMS が設定・パースできる状態かを診断する（値そのものは返さない）。
+// 健診エンドポイント用。例外は投げず、失敗時はメッセージを返す。
+export function teamsConfigured(): { ok: boolean; count: number; error?: string } {
+  try {
+    const list = teams()
+    return { ok: true, count: list.length }
+  } catch (err) {
+    return {
+      ok: false,
+      count: 0,
+      error: err instanceof Error ? err.message : 'APP_TEAMS の検証に失敗しました',
+    }
+  }
+}
+
 // 入力された ID/PW に一致するチームの teamId を返す（一致しなければ null）
 export function verifyCredentials(id: string, password: string): string | null {
   let matched: string | null = null

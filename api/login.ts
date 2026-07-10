@@ -15,7 +15,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'invalid_credentials' })
     }
     return res.status(200).json({ token: signToken(teamId) })
-  } catch {
+  } catch (err) {
+    console.error('[api/login]', err)
     return res.status(500).json({ error: 'server_error' })
   }
 }
